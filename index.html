@@ -1,0 +1,190 @@
+Publish this HTML as an artifact
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lock-In">
+<title>14-Day Lock-In</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0D0D0D;color:#E8E8E8;font-family:'JetBrains Mono','SF Mono',monospace;min-height:100vh;overflow-x:hidden}
+input:focus{outline:none;border-color:#FF6B35!important}
+input::placeholder{color:#555}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+button{font-family:inherit;cursor:pointer}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.wrap{max-width:480px;margin:0 auto;padding:16px 16px 100px}
+.hdr{text-align:center;padding:20px 0 12px}
+.hdr-sub{font-size:11px;letter-spacing:4px;color:#666;text-transform:uppercase;margin-bottom:6px}
+.hdr-big{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:800;background:linear-gradient(135deg,#FF6B35,#F7C948);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.streak{font-size:12px;color:#F7C948;margin-top:4px}
+.pills{display:flex;gap:6px;overflow-x:auto;padding:8px 0 16px;-webkit-overflow-scrolling:touch}
+.pill{flex:0 0 44px;height:56px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
+.pill-num{font-size:14px;font-weight:700}
+.dots{display:flex;gap:2px}
+.dot{width:4px;height:4px;border-radius:2px}
+.day-hdr{font-size:13px;color:#888;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.day-num{color:#FF6B35;font-weight:700}
+.badge{font-size:10px;color:#4ECDC4;background:rgba(78,205,196,0.1);padding:3px 8px;border-radius:4px;font-weight:700;letter-spacing:1px}
+.rings{display:flex;justify-content:center;gap:24px;margin-bottom:20px;padding:16px 0;background:#111;border-radius:14px;border:1px solid #1a1a1a}
+.ring-label{font-size:9px;color:#666;margin-top:4px;letter-spacing:1px;text-align:center}
+.section{margin-bottom:16px}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.section-title{font-size:12px;font-weight:700}
+.section-val{font-size:11px}
+.bar-bg{height:6px;background:#1a1a1a;border-radius:3px;margin-bottom:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.3s,background 0.3s}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.chip{font-size:11px;color:#ccc;background:#1a1a1a;border:1px solid #252525;border-radius:6px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.chip-x{color:#555;font-size:9px}
+.input-row{display:flex;gap:6px}
+.input-row input{flex:1;background:#151515;border:1px solid #252525;border-radius:8px;padding:10px 12px;color:#eee;font-size:14px;font-family:inherit}
+.input-row button{border:none;border-radius:8px;padding:0 16px;font-weight:700;font-size:13px}
+.toggles{display:flex;gap:8px;margin-bottom:24px}
+.toggle{flex:1;padding:14px 0;border-radius:12px;font-weight:700;font-size:13px;transition:all 0.2s;text-align:center}
+.complete-btn{width:100%;padding:16px 0;border-radius:14px;font-weight:800;font-size:15px;font-family:'Space Grotesk',sans-serif;letter-spacing:1px;transition:all 0.3s;border:none}
+.progress{margin-top:24px;text-align:center}
+.progress-bars{display:flex;gap:3px;justify-content:center;margin-bottom:8px}
+.progress-bar{width:20px;height:6px;border-radius:3px;transition:background 0.2s}
+.progress-text{font-size:10px;color:#555;letter-spacing:1px}
+.reset-btn{margin-top:16px;background:none;border:none;color:#333;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:1px}
+.overlay{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);animation:fadeIn 0.2s}
+.overlay-text{font-size:48px;font-weight:800;color:#4ECDC4;text-align:center;font-family:'Space Grotesk',sans-serif;animation:popIn 0.4s}
+.overlay-text span{color:#FF6B35}
+canvas.confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const TOTAL=14, KEY="lockin14v3";function getDayLabel(start, i) {
+const d=new Date(start); d.setDate(d.getDate()+i);
+return d.toLocaleDateString(“en-US”,{weekday:“short”,month:“short”,day:“numeric”});
+}
+function makeDefault() {
+const now=new Date(); now.setHours(0,0,0,0);
+return {s:now.toISOString(), d:Array.from({length:TOTAL},(_,i)=>({i,l:getDayLabel(now,i),p:[],c:[],lf:false,wk:false,dn:false}))};
+}
+function load() {
+try { const s=localStorage.getItem(KEY); if(s){const d=JSON.parse(s); if(d&&d.d&&d.d.length===TOTAL)return d;} } catch(e){}
+return makeDefault();
+}
+function save(data) { try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){} }
+let state=load(), sel=0, pIn=””, cIn=””;
+function confetti() {
+const c=document.createElement(“canvas”); c.className=“confetti”; document.body.appendChild(c);
+c.width=window.innerWidth; c.height=window.innerHeight;
+const ctx=c.getContext(“2d”);
+const ps=Array.from({length:60},()=>({x:c.width/2,y:c.height/2,vx:(Math.random()-0.5)*14,vy:(Math.random()-0.8)*12,
+s:Math.random()*6+3,cl:[”#FF6B35”,”#F7C948”,”#4ECDC4”,”#FF3366”,”#A8E6CF”,”#FFD93D”][Math.floor(Math.random()6)],life:1}));
+function go(){
+ctx.clearRect(0,0,c.width,c.height); let alive=false;
+ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.3;p.life-=0.015;
+if(p.life>0){alive=true;ctx.globalAlpha=p.life;ctx.fillStyle=p.cl;ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,Math.PI2);ctx.fill();}
+});
+if(alive)requestAnimationFrame(go);else c.remove();
+}
+requestAnimationFrame(go);
+}
+function showOverlay() {
+const ov=document.createElement(“div”); ov.className=“overlay”;
+ov.innerHTML=<div class="overlay-text">DAY ${sel+1}<br><span>LOCKED IN</span></div>;
+document.body.appendChild(ov);
+setTimeout(()=>ov.remove(),2400);
+}
+function ringSVG(value,max,color,size=58,stroke=5) {
+const r=(size-stroke)/2, circ=2Math.PIr, pct=Math.min(value/max,1), hit=value>=max;
+const sc=hit?”#4ECDC4”:color;
+return `<div style="position:relative;width:${size}px;height:${size}px">
+<svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="${stroke}"/>
+<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${sc}" stroke-width="${stroke}"
+stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct)}" stroke-linecap="round"
+style="transition:stroke-dashoffset 0.4s,stroke 0.3s"/>
+</svg>
+<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${hit?'#4ECDC4':'#ccc'}">
+${typeof value===‘string’?value:Math.round(value)}
+</div>
+</div>`;
+}function render() {
+const days=state.d, day=days[sel];
+const tp=day.p.reduce((a,b)=>a+b,0), tc=day.c.reduce((a,b)=>a+b,0);
+const pH=tp>=130, cH=tc>=1900&&tc<=2000;
+const allMet=pH&&cH&&day.lf&&day.wk;
+const done=days.filter(d=>d.dn).length;
+let streak=0; for(let i=0;i<TOTAL;i++){if(days[i].dn)streak++;else break;}
+let html=<div class="hdr"> <div class="hdr-sub">14-Day Lock-In</div> <div class="hdr-big">${done}/${TOTAL}</div> ${streak>1?<div class="streak">${streak}-day streak</div>`:’’}
+</div>`;// Pills
+html+=<div class="pills">;
+days.forEach((d,i)=>{
+const isSel=i===sel;
+const dp=d.p.reduce((a,b)=>a+b,0),dc=d.c.reduce((a,b)=>a+b,0);
+const sc=[dp>=130,dc>=1900&&dc<=2000,d.lf,d.wk].filter(Boolean).length;
+const bg=d.dn?“linear-gradient(135deg,#1a2e2a,#0d1f1a)”:isSel?”#1a1a1a”:”#111”;
+const brd=isSel?“2px solid #FF6B35”:“1px solid #222”;
+const clr=d.dn?”#4ECDC4”:isSel?”#FF6B35”:”#888”;
+html+=<button class="pill" style="border:${brd};background:${bg}" onclick="setSel(${i})"> <span class="pill-num" style="color:${clr}">${i+1}</span> ${d.dn?'<span style="font-size:10px">✓</span>':<div class="dots">${[0,1,2,3].map(j=><div class="dot" style="background:${j<sc?'#4ECDC4':'#333'}"></div>).join(’’)}</div>} </button>;
+});
+html+=</div>;
+// Day header
+html+=<div class="day-hdr"><span><span class="day-num">Day ${sel+1}</span> · ${day.l}</span>${day.dn?'<span class="badge">COMPLETE</span>':''}</div>;
+// Rings
+html+=`<div class="rings">
+<div>${ringSVG(tp,160,”#FF6B35”)}<div class="ring-label">PROTEIN</div></div>
+<div>${ringSVG(tc,2000,”#F7C948”)}<div class="ring-label">CALS</div></div>
+<div>${ringSVG(day.lf?1:0,1,”#4ECDC4”,58,5).replace(/\d+(?=</div>)/,day.lf?‘✓’:’—’)}<div class="ring-label">LIFT</div></div>
+<div>${ringSVG(day.wk?1:0,1,”#A78BFA”,58,5).replace(/\d+(?=</div>)/,day.wk?‘✓’:’—’)}<div class="ring-label">WALK</div></div>
+</div>`;// Protein
+const pClr=tp>160?”#FF3366”:pH?”#4ECDC4”:”#FF6B35”;
+html+=<div class="section"> <div class="section-hdr"><span class="section-title" style="color:#FF6B35">PROTEIN</span><span class="section-val" style="color:${pH?'#4ECDC4':'#666'}">${tp}g / 130–160g</span></div> <div class="bar-bg"><div class="bar-fill" style="width:${Math.min((tp/160)\*100,100)}%;background:${pClr}"></div></div> ${day.p.length?<div class="chips">${day.p.map((v,idx)=><button class="chip" onclick="rmE('p',${idx})">${v}g <span class="chip-x">✕</span></button>).join(’’)}</div>`:’’}
+<div class="input-row">
+<input type="number" inputmode="decimal" placeholder="grams" id="pInput" value="${pIn}" oninput="pIn=this.value" onkeydown="if(event.key==='Enter')addP()">
+<button onclick="addP()" style="background:#FF6B35;color:#fff">+</button>
+</div>
+</div>`;// Calories
+const cClr=tc>2000?”#FF3366”:cH?”#4ECDC4”:”#F7C948”;
+html+=<div class="section" style="margin-bottom:20px"> <div class="section-hdr"><span class="section-title" style="color:#F7C948">CALORIES</span><span class="section-val" style="color:${cH?'#4ECDC4':tc>2000?'#FF3366':'#666'}">${tc} / 1,900–2,000</span></div> <div class="bar-bg"><div class="bar-fill" style="width:${Math.min((tc/2000)\*100,100)}%;background:${cClr}"></div></div> ${day.c.length?<div class="chips">${day.c.map((v,idx)=><button class="chip" onclick="rmE('c',${idx})">${v} <span class="chip-x">✕</span></button>).join(’’)}</div>`:’’}
+<div class="input-row">
+<input type="number" inputmode="decimal" placeholder="calories" id="cInput" value="${cIn}" oninput="cIn=this.value" onkeydown="if(event.key==='Enter')addC()">
+<button onclick="addC()" style="background:#F7C948;color:#0D0D0D">+</button>
+</div>
+</div>`;// Toggles
+html+=`<div class="toggles">
+<button class="toggle" style="background:${day.lf?'rgba(78,205,196,0.12)':'#151515'};border:${day.lf?'2px solid #4ECDC4':'1px solid #252525'};color:${day.lf?'#4ECDC4':'#888'}" onclick="toggleLf()">${day.lf?‘LIFTED ✓’:‘LIFTED?’}</button>
+<button class="toggle" style="background:${day.wk?'rgba(167,139,250,0.12)':'#151515'};border:${day.wk?'2px solid #A78BFA':'1px solid #252525'};color:${day.wk?'#A78BFA':'#888'}" onclick="toggleWk()">${day.wk?‘WALKED ✓’:‘WALKED?’}</button>
+</div>`;// Complete button
+if(!day.dn) {
+const miss=[];if(!pH)miss.push(“protein”);if(!cH)miss.push(“calories”);if(!day.lf)miss.push(“lift”);if(!day.wk)miss.push(“walk”);
+html+=<button class="complete-btn" ${allMet?'onclick="compDay()"':'disabled'} style="background:${allMet?'linear-gradient(135deg,#FF6B35,#F7C948)':'#1a1a1a'};color:${allMet?'#0D0D0D':'#444'};cursor:${allMet?'pointer':'not-allowed'};border:${allMet?'none':'1px solid #252525'}">${allMet?'LOCK IN DAY '+(sel+1):'Need: '+miss.join(', ')}</button>;
+} else {
+html+=<button class="complete-btn" onclick="unComp()" style="background:transparent;border:1px solid #333;color:#555;font-size:12px;font-weight:600">Undo completion</button>;
+}
+// Progress
+html+=<div class="progress"> <div class="progress-bars">${days.map((d,i)=><div class="progress-bar" style="background:${d.dn?'#4ECDC4':i===sel?'#FF6B35':'#222'}"></div>).join('')}</div> <div class="progress-text">${done===TOTAL?'ALL 14 DAYS LOCKED IN':${TOTAL-done} days remaining`}</div>
+<button class="reset-btn" onclick="resetAll()">RESET TRACKER</button>
+</div>`;document.getElementById(“app”).innerHTML=html;
+// Restore cursor position in focused input
+const pI=document.getElementById(“pInput”), cI=document.getElementById(“cInput”);
+if(document.activeElement&&document.activeElement.id===“pInput”&&pI){pI.focus();pI.setSelectionRange(pIn.length,pIn.length);}
+if(document.activeElement&&document.activeElement.id===“cInput”&&cI){cI.focus();cI.setSelectionRange(cIn.length,cIn.length);}
+}
+function setSel(i){sel=i;render();}
+function addP(){const v=parseFloat(pIn);if(!v||v<=0)return;state.d[sel].p.push(v);pIn=””;save(state);render();}
+function addC(){const v=parseFloat(cIn);if(!v||v<=0)return;state.d[sel].c.push(v);cIn=””;save(state);render();}
+function rmE(t,idx){state.d[sel][t].splice(idx,1);save(state);render();}
+function toggleLf(){state.d[sel].lf=!state.d[sel].lf;save(state);render();}
+function toggleWk(){state.d[sel].wk=!state.d[sel].wk;save(state);render();}
+function compDay(){state.d[sel].dn=true;save(state);confetti();showOverlay();render();}
+function unComp(){state.d[sel].dn=false;save(state);render();}
+function resetAll(){if(!confirm(“Reset all 14 days?”))return;state=makeDefault();sel=0;save(state);render();}
+render();
+</script>
+</body>
+</html>
